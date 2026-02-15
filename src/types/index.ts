@@ -13,7 +13,7 @@ export interface Season {
 
 export interface MovieData {
   embedIframeLink?: string;
-  downloadLink: string;
+  downloadLink?: string;
 }
 
 export interface Content {
