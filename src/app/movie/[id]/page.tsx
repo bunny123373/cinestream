@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -15,14 +15,127 @@ import {
   Star,
   Clock,
   AlertCircle,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Content } from "@/types";
+
+function ContentSlider({ title, items, type }: { title: string; items: Content[]; type: "movie" | "series" }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showLeft, setShowLeft] = useState(false);
+  const [showRight, setShowRight] = useState(true);
+
+  const scroll = (direction: "left" | "right") => {
+    if (scrollRef.current) {
+      const scrollAmount = 300;
+      scrollRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setShowLeft(scrollLeft > 0);
+      setShowRight(scrollLeft + clientWidth < scrollWidth - 10);
+    }
+  };
+
+  if (items.length === 0) return null;
+
+  return (
+    <div className="relative group">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xl font-bold text-white">{title}</h3>
+      </div>
+      
+      <div className="relative">
+        {showLeft && (
+          <button
+            onClick={() => scroll("left")}
+            className="absolute left-0 top-0 bottom-0 z-10 bg-black/50 hover:bg-black/70 p-2 flex items-center transition-all opacity-0 group-hover:opacity-100"
+          >
+            <ChevronLeft className="w-6 h-6 text-white" />
+          </button>
+        )}
+        
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="flex gap-3 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4"
+        >
+          {items.map((item, index) => (
+            <motion.div
+              key={item._id || item.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.03 }}
+              className="flex-shrink-0 w-[140px] sm:w-[180px] md:w-[200px]"
+            >
+              <Link href={`/${type}/${item._id || item.id}`}>
+                <div className="relative rounded-lg overflow-hidden aspect-[2/3] transition-all duration-300 hover:scale-105 hover:z-10 hover:shadow-[0_0_30px_rgba(245,197,66,0.3)] group/card">
+                  <img
+                    src={item.poster}
+                    alt={item.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity" />
+                  
+                  {type === "movie" ? (
+                    item.movieData?.embedIframeLink && (
+                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-green-500/80 flex items-center justify-center">
+                        <Play className="w-3 h-3 text-white fill-white" />
+                      </div>
+                    )
+                  ) : (
+                    item.seasons && item.seasons.length > 0 && item.seasons.some((s: any) => s.episodes?.some((e: any) => e.embedIframeLink)) && (
+                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-green-500/80 flex items-center justify-center">
+                        <Play className="w-3 h-3 text-white fill-white" />
+                      </div>
+                    )
+                  )}
+
+                  <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover/card:opacity-100 transition-all translate-y-2 group-hover/card:translate-y-0">
+                    <h4 className="font-bold text-white text-sm line-clamp-2">{item.title}</h4>
+                    <div className="flex items-center gap-2 mt-1">
+                      {item.rating !== undefined && item.rating !== null && (
+                        <span className="flex items-center gap-1 text-xs text-yellow-400">
+                          <Star className="w-3 h-3 fill-yellow-400" />
+                          {Number(item.rating).toFixed(1)}
+                        </span>
+                      )}
+                      <span className="text-xs text-gray-400">{item.year}</span>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+
+        {showRight && (
+          <button
+            onClick={() => scroll("right")}
+            className="absolute right-0 top-0 bottom-0 z-10 bg-black/50 hover:bg-black/70 p-2 flex items-center transition-all opacity-0 group-hover:opacity-100"
+          >
+            <ChevronRight className="w-6 h-6 text-white" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function MovieDetailsPage() {
   const params = useParams();
   const id = params.id as string;
 
   const [movie, setMovie] = useState<Content | null>(null);
+  const [relatedMovies, setRelatedMovies] = useState<Content[]>([]);
+  const [relatedSeries, setRelatedSeries] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,12 +150,27 @@ export default function MovieDetailsPage() {
           return;
         }
 
-        if (data.data.type !== "movie") {
-          setError("This content is not a movie");
+        if (data.data.type === "series") {
+          window.location.href = `/series/${id}`;
           return;
         }
 
         setMovie(data.data);
+
+        const [relatedMoviesRes, relatedSeriesRes] = await Promise.all([
+          fetch(`/api/content?category=${encodeURIComponent(data.data.category)}&limit=12`),
+          fetch(`/api/content?type=series&limit=6`),
+        ]);
+
+        const moviesData = await relatedMoviesRes.json();
+        const seriesData = await relatedSeriesRes.json();
+
+        if (moviesData.success) {
+          setRelatedMovies(moviesData.data.filter((m: Content) => m._id !== id && m.type === "movie"));
+        }
+        if (seriesData.success) {
+          setRelatedSeries(seriesData.data);
+        }
       } catch (err) {
         setError("An error occurred while fetching the movie");
         console.error(err);
@@ -111,75 +239,45 @@ export default function MovieDetailsPage() {
               <ArrowLeft className="w-5 h-5" />
               <span className="font-medium">Back</span>
             </Link>
-            <div className="flex items-center gap-2">
-              <Film className="w-6 h-6 text-[#F5C542]" />
-              <span className="text-xl font-bold text-[#F9FAFB]">
-                CineStream
-              </span>
-            </div>
           </div>
         </div>
       </header>
 
-      {/* Hero Section with Backdrop */}
+      {/* Hero Section */}
       <div className="relative">
         {movie.backdrop && (
-          <div className="absolute inset-0 h-[500px]">
+          <div className="absolute inset-0 h-[50vh] overflow-hidden">
             <img
               src={movie.backdrop}
               alt={movie.title}
               className="w-full h-full object-cover"
             />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(to bottom, rgba(5, 6, 8, 0.3) 0%, rgba(5, 6, 8, 0.8) 60%, #050608 100%)",
-              }}
-            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#050608] via-[#050608]/60 to-transparent" />
           </div>
         )}
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-[30vh] pb-8">
           <div className="flex flex-col md:flex-row gap-8">
             {/* Poster */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="flex-shrink-0"
-            >
-              <div
-                className="w-64 md:w-80 rounded-2xl overflow-hidden shadow-2xl"
-                style={{
-                  border: "2px solid #1F232D",
-                  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.8)",
-                }}
-              >
-                <img
-                  src={movie.poster}
-                  alt={movie.title}
-                  className="w-full aspect-[2/3] object-cover"
-                />
-              </div>
-            </motion.div>
+            <div className="flex-shrink-0">
+              <img
+                src={movie.poster}
+                alt={movie.title}
+                className="w-48 sm:w-56 md:w-64 rounded-xl shadow-2xl"
+              />
+            </div>
 
             {/* Info */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="flex-1 flex flex-col justify-end"
-            >
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#F9FAFB] mb-4">
+            <div className="flex-1">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#F9FAFB] mb-4">
                 {movie.title}
               </h1>
 
               <div className="flex flex-wrap items-center gap-3 mb-6">
-                {movie.rating && (
+                {movie.rating !== undefined && movie.rating !== null && (
                   <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#F5C542]/10 text-[#F5C542] text-sm font-medium">
                     <Star className="w-4 h-4" />
-                    {movie.rating.toFixed(1)}
+                    {Number(movie.rating).toFixed(1)}
                   </span>
                 )}
                 <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#1F232D] text-[#9CA3AF] text-sm">
@@ -190,101 +288,75 @@ export default function MovieDetailsPage() {
                   <Globe className="w-4 h-4" />
                   {movie.language}
                 </span>
-                {movie.duration && (
-                  <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#1F232D] text-[#9CA3AF] text-sm">
-                    <Clock className="w-4 h-4" />
-                    {movie.duration}
+                {movie.category && (
+                  <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#8B5CF6]/10 text-[#8B5CF6] text-sm">
+                    <Tag className="w-4 h-4" />
+                    {movie.category}
                   </span>
                 )}
               </div>
 
-              <div className="flex items-center gap-2 mb-6">
-                <Tag className="w-4 h-4 text-[#8B5CF6]" />
-                <span className="text-[#9CA3AF]">{movie.category}</span>
-              </div>
-
-              <p className="text-[#9CA3AF] leading-relaxed mb-8 max-w-2xl">
+              <p className="text-[#9CA3AF] text-lg mb-8 max-w-2xl">
                 {movie.description}
               </p>
 
-              {/* Action Buttons */}
               <div className="flex flex-wrap gap-4">
                 {hasEmbedLink ? (
                   <Link
                     href={`/watch/${movie._id || movie.id}`}
-                    className="inline-flex items-center gap-2 px-8 py-4 bg-[#F5C542] text-[#050608] rounded-xl font-semibold transition-all hover:scale-105"
-                    style={{
-                      boxShadow: "0 0 30px rgba(245, 197, 66, 0.3)",
-                    }}
+                    className="flex items-center gap-2 px-8 py-4 bg-[#F5C542] text-[#050608] rounded-xl font-bold hover:bg-[#F5C542]/90 transition-colors"
                   >
-                    <Play className="w-5 h-5 fill-current" />
+                    <Play className="w-5 h-5" />
                     Watch Now
                   </Link>
                 ) : (
                   <button
                     disabled
-                    className="inline-flex items-center gap-2 px-8 py-4 bg-[#1F232D] text-[#6B7280] rounded-xl font-semibold cursor-not-allowed"
+                    className="flex items-center gap-2 px-8 py-4 bg-gray-600 text-gray-400 rounded-xl font-bold cursor-not-allowed"
                   >
                     <Play className="w-5 h-5" />
-                    Watch Unavailable
+                    Coming Soon
                   </button>
                 )}
 
-                <a
-                  href={movie.movieData?.downloadLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-8 py-4 bg-[#22C55E] hover:bg-[#22C55E]/90 text-white rounded-xl font-semibold transition-all hover:scale-105"
-                  style={{
-                    boxShadow: "0 0 30px rgba(34, 197, 94, 0.3)",
-                  }}
-                >
-                  <Download className="w-5 h-5" />
-                  Download
-                </a>
+                {movie.movieData?.downloadLink && (
+                  <a
+                    href={movie.movieData.downloadLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-6 py-4 bg-[#1F232D] text-[#F9FAFB] rounded-xl font-medium hover:bg-[#1F232D]/80 transition-colors"
+                  >
+                    <Download className="w-5 h-5" />
+                    Download
+                  </a>
+                )}
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Additional Info Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="rounded-2xl p-6"
-          style={{
-            background: "linear-gradient(135deg, #0E1015 0%, #1a1d26 100%)",
-            border: "1px solid #1F232D",
-          }}
-        >
-          <h2 className="text-xl font-bold text-[#F9FAFB] mb-4">
-            Movie Details
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-            <div>
-              <p className="text-sm text-[#9CA3AF] mb-1">Release Year</p>
-              <p className="text-[#F9FAFB] font-medium">{movie.year}</p>
-            </div>
-            <div>
-              <p className="text-sm text-[#9CA3AF] mb-1">Language</p>
-              <p className="text-[#F9FAFB] font-medium">{movie.language}</p>
-            </div>
-            <div>
-              <p className="text-sm text-[#9CA3AF] mb-1">Category</p>
-              <p className="text-[#F9FAFB] font-medium">{movie.category}</p>
-            </div>
-            <div>
-              <p className="text-sm text-[#9CA3AF] mb-1">Rating</p>
-              <p className="text-[#F9FAFB] font-medium">
-                {movie.rating ? `${movie.rating}/10` : "N/A"}
-              </p>
-            </div>
-          </div>
-        </motion.div>
-      </div>
+      {/* Related Movies */}
+      {relatedMovies.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+          <ContentSlider
+            title="Related Movies"
+            items={relatedMovies}
+            type="movie"
+          />
+        </div>
+      )}
+
+      {/* Related Series */}
+      {relatedSeries.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+          <ContentSlider
+            title="Popular Series"
+            items={relatedSeries}
+            type="series"
+          />
+        </div>
+      )}
     </div>
   );
 }

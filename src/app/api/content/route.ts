@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/mongodb";
 import Content from "@/models/Content";
 
+export const dynamic = "force-dynamic";
+
 // GET all content
 export async function GET(req: NextRequest) {
   try {
@@ -12,6 +14,7 @@ export async function GET(req: NextRequest) {
     const language = searchParams.get("language");
     const category = searchParams.get("category");
     const limit = searchParams.get("limit");
+    const sort = searchParams.get("sort");
 
     let query: Record<string, unknown> = {};
 
@@ -27,7 +30,12 @@ export async function GET(req: NextRequest) {
       query.category = category;
     }
 
-    let contentQuery = Content.find(query).sort({ createdAt: -1 });
+    let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
+    if (sort === "rating") {
+      sortOption = { rating: -1 };
+    }
+
+    let contentQuery = Content.find(query).sort(sortOption);
 
     if (limit) {
       contentQuery = contentQuery.limit(parseInt(limit));

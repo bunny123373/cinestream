@@ -163,10 +163,10 @@ export default function WatchMoviePage() {
                 </h1>
 
                 <div className="flex flex-wrap items-center gap-3 mb-4">
-                  {movie.rating && (
+                  {movie.rating !== undefined && movie.rating !== null && (
                     <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#F5C542]/10 text-[#F5C542] text-sm font-medium">
                       <Star className="w-4 h-4" />
-                      {movie.rating.toFixed(1)}
+                      {Number(movie.rating).toFixed(1)}
                     </span>
                   )}
                   <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#1F232D] text-[#9CA3AF] text-sm">

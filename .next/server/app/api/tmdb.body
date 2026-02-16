@@ -1,1 +1,0 @@
-{"success":false,"message":"Dynamic server usage: Route /api/tmdb couldn't be rendered statically because it used `request.url`. See more info here: https://nextjs.org/docs/messages/dynamic-server-error"}

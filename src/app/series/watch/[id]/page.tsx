@@ -223,10 +223,10 @@ export default function WatchSeriesPage() {
             </h1>
 
             <div className="flex flex-wrap items-center gap-3 mb-4">
-              {series.rating && (
+              {series.rating !== undefined && series.rating !== null && (
                 <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#F5C542]/10 text-[#F5C542] text-sm font-medium">
                   <Star className="w-4 h-4" />
-                  {series.rating.toFixed(1)}
+                  {Number(series.rating).toFixed(1)}
                 </span>
               )}
               <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-[#1F232D] text-[#9CA3AF] text-sm">
