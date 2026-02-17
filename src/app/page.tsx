@@ -166,9 +166,9 @@ export default function HomePage() {
 
         if (moviesData.success) {
           setMovies(moviesData.data);
-          const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-          const index = dayOfYear % moviesData.data.length;
-          setHeroContent(moviesData.data[index]);
+          if (moviesData.data.length > 0) {
+            setHeroContent(moviesData.data[0]);
+          }
         }
         if (seriesData.success) setSeries(seriesData.data);
         if (topRatedData.success) setTopRatedMovies(topRatedData.data);
