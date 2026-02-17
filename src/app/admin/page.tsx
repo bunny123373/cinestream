@@ -28,6 +28,11 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
   const [editingContent, setEditingContent] = useState<Content | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Check for stored admin key on mount
   useEffect(() => {
@@ -104,6 +109,12 @@ export default function AdminPage() {
       alert("An error occurred while deleting content");
     }
   };
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[#050608]" />
+    );
+  }
 
   // Login screen
   if (!isAuthenticated) {

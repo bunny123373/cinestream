@@ -11,8 +11,9 @@ export async function GET(req: NextRequest) {
     const query = searchParams.get("query") || "";
     const tmdbId = searchParams.get("id");
     const type = searchParams.get("type") || "movie";
+    const list = searchParams.get("list") || "popular";
 
-    console.log("TMDB Request:", { query, type, hasKey: !!TMDB_API_KEY });
+    console.log("TMDB Request:", { query, type, list, hasKey: !!TMDB_API_KEY });
 
     if (!TMDB_API_KEY) {
       return NextResponse.json({ 
@@ -28,10 +29,16 @@ export async function GET(req: NextRequest) {
     } else if (query) {
       url = `${TMDB_BASE_URL}/search/${type}?api_key=${TMDB_API_KEY}&language=en-US&query=${encodeURIComponent(query)}&page=1`;
       console.log("TMDB URL:", url);
+    } else if (list) {
+      if (list === "trending") {
+        url = `${TMDB_BASE_URL}/trending/${type}/week?api_key=${TMDB_API_KEY}&language=en-US&page=1`;
+      } else {
+        url = `${TMDB_BASE_URL}/${type}/${list}?api_key=${TMDB_API_KEY}&language=en-US&page=1`;
+      }
     } else {
       return NextResponse.json({ 
         success: false, 
-        message: "Query parameter required" 
+        message: "Query or list parameter required" 
       });
     }
 
@@ -51,15 +58,17 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Search results
+    // List results (popular, top_rated, now_playing, upcoming, trending)
     if (data.results) {
-      const results = data.results.slice(0, 8).map((item: any) => ({
+      const results = data.results.slice(0, 20).map((item: any) => ({
         tmdbId: item.id,
         title: item.title || item.name,
         overview: item.overview,
         poster: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
+        backdrop: item.backdrop_path ? `https://image.tmdb.org/t/p/original${item.backdrop_path}` : null,
         rating: item.vote_average,
         releaseDate: item.release_date || item.first_air_date,
+        type: type,
       }));
       return NextResponse.json({ success: true, data: { results } });
     }

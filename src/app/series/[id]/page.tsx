@@ -21,8 +21,21 @@ import { Content, Episode } from "@/types";
 
 function ContentSlider({ title, items, type }: { title: string; items: Content[]; type: "movie" | "series" }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setShowLeft(scrollLeft > 0);
+      setShowRight(scrollLeft + clientWidth < scrollWidth - 10);
+    }
+  }, [mounted, items]);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -51,7 +64,7 @@ function ContentSlider({ title, items, type }: { title: string; items: Content[]
       </div>
       
       <div className="relative">
-        {showLeft && (
+        {mounted && showLeft && (
           <button
             onClick={() => scroll("left")}
             className="absolute left-0 top-0 bottom-0 z-10 bg-black/50 hover:bg-black/70 p-2 flex items-center transition-all opacity-0 group-hover:opacity-100"
@@ -115,7 +128,7 @@ function ContentSlider({ title, items, type }: { title: string; items: Content[]
           ))}
         </div>
 
-        {showRight && (
+        {mounted && showRight && (
           <button
             onClick={() => scroll("right")}
             className="absolute right-0 top-0 bottom-0 z-10 bg-black/50 hover:bg-black/70 p-2 flex items-center transition-all opacity-0 group-hover:opacity-100"
@@ -137,6 +150,12 @@ export default function SeriesDetailsPage() {
   const [relatedMovies, setRelatedMovies] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedSeason, setSelectedSeason] = useState<number>(1);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchSeries = async () => {
@@ -155,6 +174,9 @@ export default function SeriesDetailsPage() {
         }
 
         setSeries(data.data);
+        if (data.data.seasons && data.data.seasons.length > 0) {
+          setSelectedSeason(data.data.seasons[0].seasonNumber);
+        }
 
         const [relatedSeriesRes, relatedMoviesRes] = await Promise.all([
           fetch(`/api/content?category=${encodeURIComponent(data.data.category)}&type=series&limit=12`),
@@ -187,6 +209,14 @@ export default function SeriesDetailsPage() {
     series?.seasons?.some((season) =>
       season.episodes.some((episode: Episode) => episode.embedIframeLink)
     ) ?? false;
+
+  const currentSeason = series?.seasons?.find(s => s.seasonNumber === selectedSeason);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[#050608]" />
+    );
+  }
 
   if (loading) {
     return (
@@ -324,63 +354,101 @@ export default function SeriesDetailsPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <h2 className="text-2xl font-bold text-[#F9FAFB] mb-6">Seasons & Episodes</h2>
         
-        <div className="space-y-8">
+        {/* Season Tabs */}
+        <div className="flex flex-wrap gap-2 mb-8 pb-4 border-b border-[#1F232D]">
           {series.seasons?.map((season) => (
-            <div key={season.seasonNumber} className="bg-[#0E1015] rounded-xl p-6 border border-[#1F232D]">
-              <h3 className="text-xl font-bold text-[#F9FAFB] mb-4">
-                Season {season.seasonNumber}
+            <button
+              key={season.seasonNumber}
+              onClick={() => setSelectedSeason(season.seasonNumber)}
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                selectedSeason === season.seasonNumber
+                  ? "bg-[#8B5CF6] text-white"
+                  : "bg-[#1F232D] text-[#9CA3AF] hover:bg-[#1F232D]/80 hover:text-white"
+              }`}
+            >
+              Season {season.seasonNumber}
+              <span className="ml-2 text-xs opacity-70">({season.episodes.length})</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Current Season Episodes */}
+        {currentSeason && (
+          <div className="bg-[#0E1015] rounded-2xl p-6 border border-[#1F232D]">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-[#8B5CF6] flex items-center justify-center">
+                <span className="text-white font-bold text-lg">{currentSeason.seasonNumber}</span>
+              </div>
+              <h3 className="text-xl font-bold text-[#F9FAFB]">
+                Season {currentSeason.seasonNumber}
               </h3>
-              
-              <div className="space-y-3">
-                {season.episodes.map((episode: Episode) => (
-                  <div
-                    key={episode.episodeNumber}
-                    className="flex items-center justify-between p-4 bg-[#050608] rounded-lg border border-[#1F232D] hover:border-[#8B5CF6]/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <span className="text-[#8B5CF6] font-bold w-8">
-                        {episode.episodeNumber}
-                      </span>
-                      <div>
-                        <p className="text-[#F9FAFB] font-medium">
-                          {episode.episodeTitle || `Episode ${episode.episodeNumber}`}
-                        </p>
-                        {episode.quality && (
-                          <span className="text-xs text-[#9CA3AF]">
-                            {episode.quality}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      {episode.embedIframeLink && (
+              <span className="text-sm text-[#9CA3AF] ml-auto">
+                {currentSeason.episodes.length} episodes
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {currentSeason.episodes.map((episode: Episode) => (
+                <motion.div
+                  key={episode.episodeNumber}
+                  whileHover={{ scale: 1.02 }}
+                  className="group relative bg-[#050608] rounded-xl border border-[#1F232D] hover:border-[#8B5CF6]/50 transition-all duration-300 overflow-hidden"
+                >
+                  <div className="aspect-video bg-[#1F232D] relative overflow-hidden">
+                    {series.poster && (
+                      <img
+                        src={series.poster}
+                        alt={episode.episodeTitle || `Episode ${episode.episodeNumber}`}
+                        className="w-full h-full object-cover opacity-30 group-hover:opacity-50 transition-opacity"
+                      />
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      {episode.embedIframeLink ? (
                         <Link
-                          href={`/series/watch/${series._id || series.id}?season=${season.seasonNumber}&episode=${episode.episodeNumber}`}
-                          className="px-4 py-2 bg-[#8B5CF6] text-white rounded-lg text-sm font-medium hover:bg-[#8B5CF6]/90 transition-colors"
+                          href={`/series/watch/${series._id || series.id}?season=${currentSeason.seasonNumber}&episode=${episode.episodeNumber}`}
+                          className="w-12 h-12 rounded-full bg-[#8B5CF6] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all transform group-hover:scale-110"
                         >
-                          <Play className="w-4 h-4 inline mr-1" />
-                          Watch
+                          <Play className="w-5 h-5 text-white fill-white ml-1" />
                         </Link>
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-gray-600 flex items-center justify-center opacity-50">
+                          <Play className="w-5 h-5 text-gray-400" />
+                        </div>
                       )}
+                    </div>
+                    <div className="absolute top-2 left-2 px-2 py-1 bg-black/70 rounded text-xs font-medium text-white">
+                      EP {episode.episodeNumber}
+                    </div>
+                    {episode.quality && (
+                      <div className="absolute top-2 right-2 px-2 py-1 bg-green-600/80 rounded text-xs font-medium text-white">
+                        {episode.quality}
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="p-4">
+                    <h4 className="font-semibold text-[#F9FAFB] text-sm line-clamp-1 mb-1">
+                      {episode.episodeTitle || `Episode ${episode.episodeNumber}`}
+                    </h4>
+                    <div className="flex items-center gap-2">
                       {episode.downloadLink && (
                         <a
                           href={episode.downloadLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-4 py-2 bg-[#1F232D] text-[#F9FAFB] rounded-lg text-sm font-medium hover:bg-[#1F232D]/80 transition-colors"
+                          className="flex items-center gap-1 text-xs text-[#9CA3AF] hover:text-[#8B5CF6] transition-colors"
                         >
-                          <Download className="w-4 h-4 inline mr-1" />
+                          <Download className="w-3 h-3" />
                           Download
                         </a>
                       )}
                     </div>
                   </div>
-                ))}
-              </div>
+                </motion.div>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Related Series */}

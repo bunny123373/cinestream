@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { Film, Tv, Search, Star, ChevronLeft, ChevronRight, Play, Plus, Info, Volume2, VolumeX } from "lucide-react";
+import { Film, Tv, Search, Star, ChevronLeft, ChevronRight, Play, Plus, Info } from "lucide-react";
 import { Content } from "@/types";
 
 const CATEGORIES = ["All", "Action", "Drama", "Comedy", "Thriller", "Horror", "Romance", "Sci-Fi", "Anime"];
@@ -16,8 +16,21 @@ interface SliderProps {
 
 function ContentSlider({ title, items, type }: SliderProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setShowLeft(scrollLeft > 0);
+      setShowRight(scrollLeft + clientWidth < scrollWidth - 10);
+    }
+  }, [mounted, items]);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -44,7 +57,7 @@ function ContentSlider({ title, items, type }: SliderProps) {
       </div>
       
       <div className="relative">
-        {showLeft && (
+        {mounted && showLeft && (
           <button
             onClick={() => scroll("left")}
             className="absolute left-0 top-0 bottom-0 z-10 bg-black/50 hover:bg-black/70 p-2 flex items-center transition-all opacity-0 group-hover:opacity-100"
@@ -108,7 +121,7 @@ function ContentSlider({ title, items, type }: SliderProps) {
           ))}
         </div>
 
-        {showRight && (
+        {mounted && showRight && (
           <button
             onClick={() => scroll("right")}
             className="absolute right-0 top-0 bottom-0 z-10 bg-black/50 hover:bg-black/70 p-2 flex items-center transition-all opacity-0 group-hover:opacity-100"
@@ -127,8 +140,12 @@ export default function HomePage() {
   const [topRatedMovies, setTopRatedMovies] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
-  const [muted, setMuted] = useState(true);
   const [heroContent, setHeroContent] = useState<Content | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchContent = async () => {
@@ -145,8 +162,9 @@ export default function HomePage() {
 
         if (moviesData.success) {
           setMovies(moviesData.data);
-          const randomMovie = moviesData.data[Math.floor(Math.random() * moviesData.data.length)];
-          setHeroContent(randomMovie);
+          const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+          const index = dayOfYear % moviesData.data.length;
+          setHeroContent(moviesData.data[index]);
         }
         if (seriesData.success) setSeries(seriesData.data);
         if (topRatedData.success) setTopRatedMovies(topRatedData.data);
@@ -176,8 +194,14 @@ export default function HomePage() {
     cat => groupedMovies[cat].length > 0
   );
 
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[#050608]" />
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#050608]">
+    <div className="min-h-screen bg-[#050608]" suppressHydrationWarning>
       {/* Netflix-style Hero Banner */}
       <section className="relative h-[85vh] min-h-[500px]">
         {/* Backdrop Image */}
@@ -267,20 +291,9 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Mute Button */}
-        <button
-          onClick={() => setMuted(!muted)}
-          className="absolute bottom-24 right-8 md:right-16 w-10 h-10 flex items-center justify-center bg-black/50 rounded-full hover:bg-black/70 transition-colors"
-        >
-          {muted ? (
-            <VolumeX className="w-5 h-5 text-white" />
-          ) : (
-            <Volume2 className="w-5 h-5 text-white" />
-          )}
-        </button>
-      </section>
+        </section>
 
-      {/* Content Sections */}
+        {/* Content Sections */}
       <div className="relative -mt-32 z-10 pb-20">
         {/* Top Rated Section */}
         {!loading && topRatedMovies.length > 0 && (

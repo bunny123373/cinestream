@@ -26,6 +26,11 @@ export default function WatchMoviePage() {
   const [relatedMovies, setRelatedMovies] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -70,6 +75,12 @@ export default function WatchMoviePage() {
       fetchMovie();
     }
   }, [id]);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[#050608]" />
+    );
+  }
 
   if (loading) {
     return (

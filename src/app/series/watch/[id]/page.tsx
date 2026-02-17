@@ -30,6 +30,11 @@ export default function WatchSeriesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showSeasonDropdown, setShowSeasonDropdown] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchSeries = async () => {
@@ -86,6 +91,12 @@ export default function WatchSeriesPage() {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[#050608]" />
+    );
+  }
 
   if (loading) {
     return (

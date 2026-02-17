@@ -22,8 +22,21 @@ import { Content } from "@/types";
 
 function ContentSlider({ title, items, type }: { title: string; items: Content[]; type: "movie" | "series" }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(true);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setShowLeft(scrollLeft > 0);
+      setShowRight(scrollLeft + clientWidth < scrollWidth - 10);
+    }
+  }, [mounted, items]);
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
@@ -52,7 +65,7 @@ function ContentSlider({ title, items, type }: { title: string; items: Content[]
       </div>
       
       <div className="relative">
-        {showLeft && (
+        {mounted && showLeft && (
           <button
             onClick={() => scroll("left")}
             className="absolute left-0 top-0 bottom-0 z-10 bg-black/50 hover:bg-black/70 p-2 flex items-center transition-all opacity-0 group-hover:opacity-100"
@@ -116,7 +129,7 @@ function ContentSlider({ title, items, type }: { title: string; items: Content[]
           ))}
         </div>
 
-        {showRight && (
+        {mounted && showRight && (
           <button
             onClick={() => scroll("right")}
             className="absolute right-0 top-0 bottom-0 z-10 bg-black/50 hover:bg-black/70 p-2 flex items-center transition-all opacity-0 group-hover:opacity-100"
@@ -138,6 +151,11 @@ export default function MovieDetailsPage() {
   const [relatedSeries, setRelatedSeries] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -183,6 +201,12 @@ export default function MovieDetailsPage() {
       fetchMovie();
     }
   }, [id]);
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[#050608]" />
+    );
+  }
 
   const hasEmbedLink = !!movie?.movieData?.embedIframeLink;
 
