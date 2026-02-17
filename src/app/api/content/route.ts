@@ -97,11 +97,11 @@ export async function POST(req: NextRequest) {
 
     // Validate type-specific fields
     if (body.type === "movie") {
-      if (!body.movieData?.downloadLink) {
+      if (!body.movieData?.embedIframeLink && !body.movieData?.downloadLink) {
         return NextResponse.json(
           {
             success: false,
-            message: "Movie downloadLink is required",
+            message: "Movie embedIframeLink or downloadLink is required",
           },
           { status: 400 }
         );

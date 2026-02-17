@@ -34,7 +34,7 @@ function ContentSlider({ title, items, type }: SliderProps) {
 
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
-      const scrollAmount = 300;
+      const scrollAmount = 400;
       scrollRef.current.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth",
@@ -53,66 +53,70 @@ function ContentSlider({ title, items, type }: SliderProps) {
   return (
     <div className="relative group">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-bold text-white">{title}</h3>
+        <h3 className="text-2xl font-bold text-white hover:text-[#F5C542] cursor-pointer transition-colors">{title}</h3>
       </div>
       
       <div className="relative">
         {mounted && showLeft && (
           <button
             onClick={() => scroll("left")}
-            className="absolute left-0 top-0 bottom-0 z-10 bg-black/50 hover:bg-black/70 p-2 flex items-center transition-all opacity-0 group-hover:opacity-100"
+            className="absolute left-0 top-0 bottom-0 z-20 bg-gradient-to-r from-[#050608] to-transparent w-12 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
           >
-            <ChevronLeft className="w-6 h-6 text-white" />
+            <ChevronLeft className="w-8 h-8 text-white" />
           </button>
         )}
         
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="flex gap-3 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4"
+          className="flex gap-2 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4"
         >
           {items.map((item, index) => (
             <motion.div
               key={item._id || item.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.03 }}
-              className="flex-shrink-0 w-[140px] sm:w-[180px] md:w-[200px]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: index * 0.02 }}
+              className="flex-shrink-0 w-[160px] sm:w-[200px] md:w-[230px] lg:w-[260px]"
             >
               <Link href={`/${type}/${item._id || item.id}`}>
-                <div className="relative rounded-lg overflow-hidden aspect-[2/3] transition-all duration-300 hover:scale-105 hover:z-10 hover:shadow-[0_0_30px_rgba(245,197,66,0.3)] group/card">
+                <div className="relative rounded-md overflow-hidden aspect-[2/3] transition-all duration-300 group/card hover:scale-110 hover:rounded-md z-10 shadow-lg">
                   <img
                     src={item.poster}
                     alt={item.title}
                     className="w-full h-full object-cover"
                     loading="lazy"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity" />
+                  
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+                  
+                  <div className="absolute inset-0 bg-[#F5C542] opacity-0 group-hover/card:opacity-10 transition-opacity duration-300" />
                   
                   {type === "movie" ? (
                     item.movieData?.embedIframeLink && (
-                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-green-500/80 flex items-center justify-center">
-                        <Play className="w-3 h-3 text-white fill-white" />
+                      <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300 transform scale-50 group-hover/card:scale-100">
+                        <Play className="w-4 h-4 text-white fill-white ml-0.5" />
                       </div>
                     )
                   ) : (
                     item.seasons && item.seasons.length > 0 && item.seasons.some((s: any) => s.episodes?.some((e: any) => e.embedIframeLink)) && (
-                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-green-500/80 flex items-center justify-center">
-                        <Play className="w-3 h-3 text-white fill-white" />
+                      <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300 transform scale-50 group-hover/card:scale-100">
+                        <Play className="w-4 h-4 text-white fill-white ml-0.5" />
                       </div>
                     )
                   )}
 
-                  <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover/card:opacity-100 transition-all translate-y-2 group-hover/card:translate-y-0">
-                    <h4 className="font-bold text-white text-sm line-clamp-2">{item.title}</h4>
-                    <div className="flex items-center gap-2 mt-1">
+                  <div className="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover/card:opacity-100 transition-all duration-300 transform translate-y-4 group-hover/card:translate-y-0">
+                    <h4 className="font-bold text-white text-sm line-clamp-2 mb-2">{item.title}</h4>
+                    <div className="flex items-center gap-3 text-xs">
                       {item.rating !== undefined && item.rating !== null && (
-                        <span className="flex items-center gap-1 text-xs text-yellow-400">
+                        <span className="flex items-center gap-1 text-yellow-400 font-medium">
                           <Star className="w-3 h-3 fill-yellow-400" />
                           {Number(item.rating).toFixed(1)}
                         </span>
                       )}
-                      <span className="text-xs text-gray-400">{item.year}</span>
+                      <span className="text-gray-300">{item.year}</span>
+                      <span className="text-gray-400">{item.category}</span>
                     </div>
                   </div>
                 </div>
@@ -124,9 +128,9 @@ function ContentSlider({ title, items, type }: SliderProps) {
         {mounted && showRight && (
           <button
             onClick={() => scroll("right")}
-            className="absolute right-0 top-0 bottom-0 z-10 bg-black/50 hover:bg-black/70 p-2 flex items-center transition-all opacity-0 group-hover:opacity-100"
+            className="absolute right-0 top-0 bottom-0 z-20 bg-gradient-to-l from-[#050608] to-transparent w-12 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
           >
-            <ChevronRight className="w-6 h-6 text-white" />
+            <ChevronRight className="w-8 h-8 text-white" />
           </button>
         )}
       </div>
