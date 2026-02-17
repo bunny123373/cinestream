@@ -88,6 +88,13 @@ function ContentSlider({ title, items, type }: SliderProps) {
                     loading="lazy"
                   />
                   
+                  {item.rating !== undefined && item.rating !== null && (
+                    <div className="absolute top-3 left-3 px-2 py-1 bg-black/70 backdrop-blur-sm rounded-md flex items-center gap-1">
+                      <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                      <span className="text-white text-xs font-bold">{Number(item.rating).toFixed(1)}</span>
+                    </div>
+                  )}
+                  
                   <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
                   
                   <div className="absolute inset-0 bg-[#F5C542] opacity-0 group-hover/card:opacity-10 transition-opacity duration-300" />

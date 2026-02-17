@@ -101,7 +101,9 @@ export default function AdminPage() {
 
       if (data.success) {
         alert("Content deleted successfully!");
-        fetchContent();
+        const itemId = item._id || item.id;
+        setContent(prev => prev.filter(c => (c._id || c.id) !== itemId));
+        setTimeout(() => fetchContent(), 500);
       } else {
         alert(data.message || "Failed to delete content");
       }
