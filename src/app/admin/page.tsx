@@ -85,7 +85,7 @@ export default function AdminPage() {
   };
 
   const handleDelete = async (item: Content) => {
-    if (!confirm(`Are you sure you want to delete "${item.title}"?`)) {
+    if (!confirm(`Are you sure you want to delete "${item.title}"? This action cannot be undone.`)) {
       return;
     }
 
@@ -100,13 +100,14 @@ export default function AdminPage() {
       const data = await response.json();
 
       if (data.success) {
+        alert("Content deleted successfully!");
         fetchContent();
       } else {
         alert(data.message || "Failed to delete content");
       }
     } catch (error) {
       console.error("Error deleting content:", error);
-      alert("An error occurred while deleting content");
+      alert("Network error. Please check your connection and try again.");
     }
   };
 
