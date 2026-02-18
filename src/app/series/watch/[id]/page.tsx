@@ -20,6 +20,21 @@ import {
 import IframePlayer from "@/components/IframePlayer";
 import { Content, Episode, Season } from "@/types";
 
+const PlayerAd = () => {
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://quge5.com/88/tag.min.js";
+    script.setAttribute("data-zone", "212237");
+    script.setAttribute("data-cfasync", "false");
+    script.async = true;
+    document.body.appendChild(script);
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+  return null;
+};
+
 export default function WatchSeriesPage() {
   const params = useParams();
   const id = params.id as string;
@@ -162,6 +177,7 @@ export default function WatchSeriesPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <PlayerAd />
         {/* Video Player Section */}
         <section className="mb-8">
           <IframePlayer

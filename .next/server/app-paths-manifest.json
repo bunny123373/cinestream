@@ -8,8 +8,8 @@
   "/series/watch/[id]/page": "app/series/watch/[id]/page.js",
   "/watch/[id]/page": "app/watch/[id]/page.js",
   "/api/content/route": "app/api/content/route.js",
-  "/api/tmdb/route": "app/api/tmdb/route.js",
   "/api/content/[id]/route": "app/api/content/[id]/route.js",
+  "/api/tmdb/route": "app/api/tmdb/route.js",
   "/terms/page": "app/terms/page.js",
   "/sitemap.xml/route": "app/sitemap.xml/route.js"
 }

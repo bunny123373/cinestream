@@ -40,14 +40,6 @@ export default function DownloadPage() {
   const contentType = searchParams.get("type") || "movie";
 
   useEffect(() => {
-    const adCompleted = localStorage.getItem("adCompleted");
-    if (adCompleted === "true") {
-      setShowAdWall(false);
-      setAdClicked(true);
-    }
-  }, []);
-
-  useEffect(() => {
     const fetchDownloadLink = async () => {
       try {
         const response = await fetch(`/api/content/${contentId}`);
@@ -101,7 +93,6 @@ export default function DownloadPage() {
 
   const handleAdClick = () => {
     setAdClicked(true);
-    localStorage.setItem("adCompleted", "true");
   };
 
   const handleDownload = () => {

@@ -1,1 +1,1 @@
-{"version":1,"functions":{"/api/content/[id]":{},"/api/content":{},"/sitemap.xml":{},"/api/tmdb":{},"/terms":{}}}
+{"version":1,"functions":{"/api/content":{},"/api/content/[id]":{},"/sitemap.xml":{},"/api/tmdb":{},"/terms":{}}}

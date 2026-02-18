@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Content } from "@/types";
 import PrimeVideoContentRow from "@/components/PrimeVideoContentRow";
+import DownloadAd from "@/components/DownloadAd";
 
 export default function MovieDetailsPage() {
   const params = useParams();
@@ -131,6 +132,7 @@ export default function MovieDetailsPage() {
 
   return (
     <div className="min-h-screen bg-[#050608]">
+      <DownloadAd />
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[#050608]/80 backdrop-blur-xl border-b border-[#1F232D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
