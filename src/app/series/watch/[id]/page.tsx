@@ -198,10 +198,9 @@ export default function WatchSeriesPage() {
                     {selectedEpisode.quality}
                   </span>
                 </div>
-                <a
-                  href={selectedEpisode.downloadLink}
+                <Link
+                  href={`/download/${series._id || series.id}?type=episode&season=${selectedSeason - 1}&episode=${selectedEpisode ? currentSeason?.episodes?.findIndex((e) => e.episodeNumber === selectedEpisode.episodeNumber) : 0}`}
                   target="_blank"
-                  rel="noopener noreferrer"
                   className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#22C55E] hover:bg-[#22C55E]/90 text-white rounded-xl font-semibold transition-all hover:scale-105"
                   style={{
                     boxShadow: "0 0 30px rgba(34, 197, 94, 0.3)",
@@ -209,7 +208,7 @@ export default function WatchSeriesPage() {
                 >
                   <Download className="w-5 h-5" />
                   Download Episode
-                </a>
+                </Link>
               </div>
             </div>
           </motion.section>

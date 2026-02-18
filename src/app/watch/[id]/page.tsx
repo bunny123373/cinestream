@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import IframePlayer from "@/components/IframePlayer";
 import { Content } from "@/types";
+import PrimeVideoContentRow from "@/components/PrimeVideoContentRow";
 
 export default function WatchMoviePage() {
   const params = useParams();
@@ -208,10 +209,9 @@ export default function WatchMoviePage() {
 
               {/* Download Button */}
               <div className="flex-shrink-0">
-                <a
-                  href={movie.movieData?.downloadLink}
+                <Link
+                  href={`/download/${movie._id || movie.id}?type=movie`}
                   target="_blank"
-                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-6 py-4 bg-[#22C55E] hover:bg-[#22C55E]/90 text-white rounded-xl font-semibold transition-all hover:scale-105"
                   style={{
                     boxShadow: "0 0 30px rgba(34, 197, 94, 0.3)",
@@ -219,7 +219,7 @@ export default function WatchMoviePage() {
                 >
                   <Download className="w-5 h-5" />
                   Download Movie
-                </a>
+                </Link>
               </div>
             </div>
           </motion.div>
@@ -227,50 +227,12 @@ export default function WatchMoviePage() {
 
         {/* Related Movies Section */}
         {relatedMovies.length > 0 && (
-          <section>
-            <motion.h2
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="text-xl sm:text-2xl font-bold text-[#F9FAFB] mb-6"
-            >
-              Related Movies
-            </motion.h2>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-              {relatedMovies.map((relatedMovie, index) => (
-                <motion.div
-                  key={relatedMovie._id || relatedMovie.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * index }}
-                >
-                  <Link href={`/watch/${relatedMovie._id || relatedMovie.id}`}>
-                    <div
-                      className="group relative rounded-xl overflow-hidden aspect-[2/3] transition-transform hover:scale-105"
-                      style={{
-                        border: "1px solid #1F232D",
-                      }}
-                    >
-                      <img
-                        src={relatedMovie.poster}
-                        alt={relatedMovie.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#050608] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform">
-                        <h3 className="text-sm font-semibold text-[#F9FAFB] line-clamp-2">
-                          {relatedMovie.title}
-                        </h3>
-                        <p className="text-xs text-[#9CA3AF] mt-1">
-                          {relatedMovie.year}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
+          <section className="px-4 sm:px-6 lg:px-8 pb-12">
+            <PrimeVideoContentRow
+              title="Related Movies"
+              items={relatedMovies}
+              type="movie"
+            />
           </section>
         )}
       </main>

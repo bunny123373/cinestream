@@ -17,26 +17,23 @@ export default function HeroBanner({ content }: HeroBannerProps) {
     ? `/watch/${content._id || content.id}`
     : `/series/${content._id || content.id}`;
 
+  const backgroundImage = content.backdrop || content.poster || "";
+
   return (
-    <section className="relative h-[45vh] md:h-[55vh] lg:h-[85vh] min-h-[200px] md:min-h-[300px] w-full overflow-hidden">
+    <section className="relative h-[40vh] md:h-[50vh] lg:h-[85vh] min-h-[180px] md:min-h-[280px] w-full overflow-hidden">
       <div className="absolute inset-0">
-        {content.backdrop ? (
-          <img
-            src={content.backdrop}
-            alt={content.title}
-            className="w-full h-full object-cover"
+        {backgroundImage && (
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ 
+              backgroundImage: `url(${backgroundImage})`,
+            }}
           />
-        ) : content.poster ? (
-          <img
-            src={content.poster}
-            alt={content.title}
-            className="w-full h-full object-cover"
-          />
-        ) : null}
+        )}
         
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0a0a0a]" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/70 via-[#0a0a0a]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/50 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0a0a0a]/70" />
       </div>
 
       <div className="relative h-full w-full flex items-end">

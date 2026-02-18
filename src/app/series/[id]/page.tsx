@@ -18,128 +18,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Content, Episode } from "@/types";
-
-function ContentSlider({ title, items, type }: { title: string; items: Content[]; type: "movie" | "series" }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
-  const [showLeft, setShowLeft] = useState(false);
-  const [showRight, setShowRight] = useState(true);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted && scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setShowLeft(scrollLeft > 0);
-      setShowRight(scrollLeft + clientWidth < scrollWidth - 10);
-    }
-  }, [mounted, items]);
-
-  const scroll = (direction: "left" | "right") => {
-    if (scrollRef.current) {
-      const scrollAmount = 300;
-      scrollRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  const handleScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setShowLeft(scrollLeft > 0);
-      setShowRight(scrollLeft + clientWidth < scrollWidth - 10);
-    }
-  };
-
-  if (items.length === 0) return null;
-
-  return (
-    <div className="relative group">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-bold text-white">{title}</h3>
-      </div>
-      
-      <div className="relative">
-        {mounted && showLeft && (
-          <button
-            onClick={() => scroll("left")}
-            className="absolute left-0 top-0 bottom-0 z-10 bg-black/50 hover:bg-black/70 p-2 flex items-center transition-all opacity-0 group-hover:opacity-100"
-          >
-            <ChevronLeft className="w-6 h-6 text-white" />
-          </button>
-        )}
-        
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className="flex gap-3 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4"
-        >
-          {items.map((item, index) => (
-            <motion.div
-              key={item._id || item.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: index * 0.03 }}
-              className="flex-shrink-0 w-[140px] sm:w-[180px] md:w-[200px]"
-            >
-              <Link href={`/${type}/${item._id || item.id}`}>
-                <div className="relative rounded-lg overflow-hidden aspect-[2/3] transition-all duration-300 hover:scale-105 hover:z-10 hover:shadow-[0_0_30px_rgba(139,92,246,0.3)] group/card">
-                  <img
-                    src={item.poster}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity" />
-                  
-                  {type === "movie" ? (
-                    item.movieData?.embedIframeLink && (
-                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-green-500/80 flex items-center justify-center">
-                        <Play className="w-3 h-3 text-white fill-white" />
-                      </div>
-                    )
-                  ) : (
-                    item.seasons && item.seasons.length > 0 && item.seasons.some((s: any) => s.episodes?.some((e: any) => e.embedIframeLink)) && (
-                      <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-green-500/80 flex items-center justify-center">
-                        <Play className="w-3 h-3 text-white fill-white" />
-                      </div>
-                    )
-                  )}
-
-                  <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover/card:opacity-100 transition-all translate-y-2 group-hover/card:translate-y-0">
-                    <h4 className="font-bold text-white text-sm line-clamp-2">{item.title}</h4>
-                    <div className="flex items-center gap-2 mt-1">
-                      {item.rating !== undefined && item.rating !== null && (
-                        <span className="flex items-center gap-1 text-xs text-yellow-400">
-                          <Star className="w-3 h-3 fill-yellow-400" />
-                          {Number(item.rating).toFixed(1)}
-                        </span>
-                      )}
-                      <span className="text-xs text-gray-400">{item.year}</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-
-        {mounted && showRight && (
-          <button
-            onClick={() => scroll("right")}
-            className="absolute right-0 top-0 bottom-0 z-10 bg-black/50 hover:bg-black/70 p-2 flex items-center transition-all opacity-0 group-hover:opacity-100"
-          >
-            <ChevronRight className="w-6 h-6 text-white" />
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
+import PrimeVideoContentRow from "@/components/PrimeVideoContentRow";
 
 export default function SeriesDetailsPage() {
   const params = useParams();
@@ -432,15 +311,14 @@ export default function SeriesDetailsPage() {
                     </h4>
                     <div className="flex items-center gap-2">
                       {episode.downloadLink && (
-                        <a
-                          href={episode.downloadLink}
+                        <Link
+                          href={`/download/${series._id || series.id}?type=episode&season=${selectedSeason - 1}&episode=${currentSeason?.episodes?.findIndex((e) => e.episodeNumber === episode.episodeNumber)}`}
                           target="_blank"
-                          rel="noopener noreferrer"
                           className="flex items-center gap-1 text-xs text-[#9CA3AF] hover:text-[#8B5CF6] transition-colors"
                         >
                           <Download className="w-3 h-3" />
                           Download
-                        </a>
+                        </Link>
                       )}
                     </div>
                   </div>
@@ -453,8 +331,8 @@ export default function SeriesDetailsPage() {
 
       {/* Related Series */}
       {relatedSeries.length > 0 && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-          <ContentSlider
+        <div className="px-4 sm:px-6 lg:px-8 pb-12">
+          <PrimeVideoContentRow
             title="Related Series"
             items={relatedSeries}
             type="series"
@@ -464,8 +342,8 @@ export default function SeriesDetailsPage() {
 
       {/* Related Movies */}
       {relatedMovies.length > 0 && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-          <ContentSlider
+        <div className="px-4 sm:px-6 lg:px-8 pb-12">
+          <PrimeVideoContentRow
             title="Popular Movies"
             items={relatedMovies}
             type="movie"
