@@ -7,15 +7,15 @@ import { Download, ArrowLeft, Loader2, ExternalLink, Megaphone } from "lucide-re
 
 const AD_URL = "https://omg10.com/4/10624270";
 
-const DownloadCounter = () => {
+const CountScript = () => {
   useEffect(() => {
     const script = document.createElement("script");
-    script.src = "https://3nbf4.com/act/files/tag.min.js?z=10624210";
-    script.setAttribute("data-cfasync", "false");
-    script.async = true;
+    script.innerHTML = `(function(s){s.dataset.zone='10623591',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
     document.body.appendChild(script);
     return () => {
-      document.body.removeChild(script);
+      try {
+        document.body.removeChild(script);
+      } catch (e) {}
     };
   }, []);
   return null;
@@ -24,7 +24,7 @@ const DownloadCounter = () => {
 export default function DownloadPage() {
   const params = useParams();
   const searchParams = useSearchParams();
-  const [countdown, setCountdown] = useState(15);
+  const [countdown, setCountdown] = useState(10);
   const [progress, setProgress] = useState(100);
   const [isReady, setIsReady] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -80,7 +80,7 @@ export default function DownloadPage() {
       const timer = setInterval(() => {
         setCountdown((prev) => {
           const newValue = prev - 1;
-          setProgress((newValue / 15) * 100);
+          setProgress((newValue / 10) * 100);
           return newValue;
         });
       }, 1000);
@@ -115,7 +115,7 @@ export default function DownloadPage() {
   if (showAdWall) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
-        <DownloadCounter />
+        <CountScript />
         <div className="max-w-md w-full bg-[#1a1a1a] rounded-2xl p-8 text-center">
           <div className="mb-6">
             <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-yellow-500/10 flex items-center justify-center">
@@ -165,7 +165,7 @@ export default function DownloadPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
-      <DownloadCounter />
+      <CountScript />
       <div className="max-w-md w-full bg-[#1a1a1a] rounded-2xl p-8 text-center">
         {adClicked && (
           <div className="mb-4 px-3 py-2 bg-green-500/10 border border-green-500/30 rounded-lg">

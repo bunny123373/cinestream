@@ -13,7 +13,7 @@
       "static/chunks/23-3ffe14828bac38ed.js",
       "static/chunks/main-app-735111d5633a4c57.js",
       "static/css/6ecd969a440729ee.css",
-      "static/chunks/app/layout-2011a5476a633931.js"
+      "static/chunks/app/layout-97638429cd0a6591.js"
     ],
     "/admin/page": [
       "static/chunks/webpack-1796d5ecd61cbd74.js",
@@ -31,7 +31,7 @@
       "static/chunks/23-3ffe14828bac38ed.js",
       "static/chunks/main-app-735111d5633a4c57.js",
       "static/chunks/231-d2c99c50b5bbebdf.js",
-      "static/chunks/app/download/[id]/page-6007d9a44b72f0b7.js"
+      "static/chunks/app/download/[id]/page-3d8c7a098a4df753.js"
     ],
     "/movie/[id]/page": [
       "static/chunks/webpack-1796d5ecd61cbd74.js",
