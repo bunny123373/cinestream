@@ -5,7 +5,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Download, ArrowLeft, Loader2, ExternalLink, Megaphone } from "lucide-react";
 
-const AD_URL = "https://www.google.com/search?q=free+movies+streaming";
+const AD_URL = "https://omg10.com/4/10624270";
 
 const DownloadCounter = () => {
   useEffect(() => {
@@ -150,23 +150,14 @@ export default function DownloadPage() {
               Click Ad to Continue
             </a>
             <p className="text-xs text-gray-500 mt-2">
-              Click the ad above, then come back to download
+              Click the ad above to support us, then download will start automatically
             </p>
           </div>
 
           <div className="border-t border-gray-800 pt-4">
-            <p className="text-sm text-gray-500 mb-4">
-              Or skip ad and wait:
+            <p className="text-sm text-gray-500">
+              After clicking the ad, this page will generate your download link
             </p>
-            <button
-              onClick={() => {
-                setShowAdWall(false);
-                localStorage.setItem("adCompleted", "true");
-              }}
-              className="text-blue-500 hover:text-blue-400 text-sm"
-            >
-              Skip and wait 15 seconds →
-            </button>
           </div>
 
           <Link
