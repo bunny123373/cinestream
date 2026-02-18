@@ -9,6 +9,39 @@ interface UploadMovieFormProps {
   onSuccess?: () => void;
 }
 
+const GENRE_MAPPING: Record<string, string> = {
+  "Action": "Action",
+  "Adventure": "Action",
+  "Animation": "Anime",
+  "Comedy": "Comedy",
+  "Crime": "Thriller",
+  "Documentary": "Drama",
+  "Drama": "Drama",
+  "Family": "Drama",
+  "Fantasy": "Sci-Fi",
+  "History": "Drama",
+  "Horror": "Horror",
+  "Music": "Drama",
+  "Mystery": "Thriller",
+  "Romance": "Romance",
+  "Science Fiction": "Sci-Fi",
+  "TV Movie": "Drama",
+  "Thriller": "Thriller",
+  "War": "Action",
+  "Western": "Action",
+};
+
+const mapGenresToCategory = (genres: string[]): string => {
+  if (!genres || genres.length === 0) return "";
+  
+  for (const genre of genres) {
+    if (GENRE_MAPPING[genre]) {
+      return GENRE_MAPPING[genre];
+    }
+  }
+  return genres[0] || "";
+};
+
 export default function UploadMovieForm({ adminKey, onSuccess }: UploadMovieFormProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,17 +91,40 @@ export default function UploadMovieForm({ adminKey, onSuccess }: UploadMovieForm
     }
   };
 
-  const handleSelectMovie = (movie: any) => {
-    setFormData((prev) => ({
-      ...prev,
-      title: movie.title || "",
-      description: movie.overview || "",
-      poster: movie.poster || "",
-      backdrop: movie.backdrop || "",
-      year: movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : new Date().getFullYear(),
-      rating: movie.rating?.toString() || "",
-      tmdbId: movie.tmdbId?.toString() || "",
-    }));
+  const handleSelectMovie = async (movie: any) => {
+    try {
+      const response = await fetch(`/api/tmdb?id=${movie.tmdbId}&type=movie`);
+      const data = await response.json();
+      
+      let category = movie.category || "";
+      if (data.success && data.data?.genres?.length > 0) {
+        category = mapGenresToCategory(data.data.genres);
+      }
+      
+      setFormData((prev) => ({
+        ...prev,
+        title: movie.title || "",
+        description: movie.overview || "",
+        poster: movie.poster || "",
+        backdrop: movie.backdrop || "",
+        year: movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : new Date().getFullYear(),
+        rating: movie.rating?.toString() || "",
+        tmdbId: movie.tmdbId?.toString() || "",
+        category: category,
+      }));
+    } catch (err) {
+      console.error("Error fetching movie details:", err);
+      setFormData((prev) => ({
+        ...prev,
+        title: movie.title || "",
+        description: movie.overview || "",
+        poster: movie.poster || "",
+        backdrop: movie.backdrop || "",
+        year: movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : new Date().getFullYear(),
+        rating: movie.rating?.toString() || "",
+        tmdbId: movie.tmdbId?.toString() || "",
+      }));
+    }
     setSearchQuery(movie.title || "");
     setShowResults(false);
     setSearchResults([]);

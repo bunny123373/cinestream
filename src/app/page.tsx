@@ -1,158 +1,25 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
-import { Film, Tv, Search, Star, ChevronLeft, ChevronRight, Play, Plus, Info } from "lucide-react";
+import { Search, Film, Tv, Menu, X } from "lucide-react";
 import { Content } from "@/types";
+import PrimeVideoHeroBanner from "@/components/PrimeVideoHeroBanner";
+import PrimeVideoContentRow from "@/components/PrimeVideoContentRow";
 
 const CATEGORIES = ["All", "Action", "Drama", "Comedy", "Thriller", "Horror", "Romance", "Sci-Fi", "Anime"];
-
-interface SliderProps {
-  title: string;
-  items: Content[];
-  type: "movie" | "series";
-}
-
-function ContentSlider({ title, items, type }: SliderProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
-  const [showLeft, setShowLeft] = useState(false);
-  const [showRight, setShowRight] = useState(true);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted && scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setShowLeft(scrollLeft > 0);
-      setShowRight(scrollLeft + clientWidth < scrollWidth - 10);
-    }
-  }, [mounted, items]);
-
-  const scroll = (direction: "left" | "right") => {
-    if (scrollRef.current) {
-      const scrollAmount = 400;
-      scrollRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  const handleScroll = () => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      setShowLeft(scrollLeft > 0);
-      setShowRight(scrollLeft + clientWidth < scrollWidth - 10);
-    }
-  };
-
-  return (
-    <div className="relative group">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-2xl font-bold text-white hover:text-[#F5C542] cursor-pointer transition-colors">{title}</h3>
-      </div>
-      
-      <div className="relative">
-        {mounted && showLeft && (
-          <button
-            onClick={() => scroll("left")}
-            className="absolute left-0 top-0 bottom-0 z-20 bg-gradient-to-r from-[#050608] to-transparent w-12 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-          >
-            <ChevronLeft className="w-8 h-8 text-white" />
-          </button>
-        )}
-        
-        <div
-          ref={scrollRef}
-          onScroll={handleScroll}
-          className="flex gap-2 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4"
-        >
-          {items.map((item, index) => (
-            <motion.div
-              key={item._id || item.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: index * 0.02 }}
-              className="flex-shrink-0 w-[160px] sm:w-[200px] md:w-[230px] lg:w-[260px]"
-            >
-              <Link href={`/${type}/${item._id || item.id}`}>
-                <div className="relative rounded-md overflow-hidden aspect-[2/3] transition-all duration-300 group/card hover:scale-110 hover:rounded-md z-10 shadow-lg">
-                  <img
-                    src={item.poster}
-                    alt={item.title}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  
-                  {item.rating !== undefined && item.rating !== null && (
-                    <div className="absolute top-3 left-3 px-2 py-1 bg-black/70 backdrop-blur-sm rounded-md flex items-center gap-1">
-                      <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                      <span className="text-white text-xs font-bold">{Number(item.rating).toFixed(1)}</span>
-                    </div>
-                  )}
-                  
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
-                  
-                  <div className="absolute inset-0 bg-[#F5C542] opacity-0 group-hover/card:opacity-10 transition-opacity duration-300" />
-                  
-                  {type === "movie" ? (
-                    item.movieData?.embedIframeLink && (
-                      <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300 transform scale-50 group-hover/card:scale-100">
-                        <Play className="w-4 h-4 text-white fill-white ml-0.5" />
-                      </div>
-                    )
-                  ) : (
-                    item.seasons && item.seasons.length > 0 && item.seasons.some((s: any) => s.episodes?.some((e: any) => e.embedIframeLink)) && (
-                      <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-green-500 flex items-center justify-center opacity-0 group-hover/card:opacity-100 transition-all duration-300 transform scale-50 group-hover/card:scale-100">
-                        <Play className="w-4 h-4 text-white fill-white ml-0.5" />
-                      </div>
-                    )
-                  )}
-
-                  <div className="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover/card:opacity-100 transition-all duration-300 transform translate-y-4 group-hover/card:translate-y-0">
-                    <h4 className="font-bold text-white text-sm line-clamp-2 mb-2">{item.title}</h4>
-                    <div className="flex items-center gap-3 text-xs">
-                      {item.rating !== undefined && item.rating !== null && (
-                        <span className="flex items-center gap-1 text-yellow-400 font-medium">
-                          <Star className="w-3 h-3 fill-yellow-400" />
-                          {Number(item.rating).toFixed(1)}
-                        </span>
-                      )}
-                      <span className="text-gray-300">{item.year}</span>
-                      <span className="text-gray-400">{item.category}</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-
-        {mounted && showRight && (
-          <button
-            onClick={() => scroll("right")}
-            className="absolute right-0 top-0 bottom-0 z-20 bg-gradient-to-l from-[#050608] to-transparent w-12 flex items-center justify-center transition-all opacity-0 group-hover:opacity-100"
-          >
-            <ChevronRight className="w-8 h-8 text-white" />
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
 
 export default function HomePage() {
   const [movies, setMovies] = useState<Content[]>([]);
   const [series, setSeries] = useState<Content[]>([]);
   const [topRatedMovies, setTopRatedMovies] = useState<Content[]>([]);
+  const [tmdbTrending, setTmdbTrending] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [heroContent, setHeroContent] = useState<Content | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     setMounted(true);
@@ -161,15 +28,15 @@ export default function HomePage() {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const [moviesRes, seriesRes, topRatedRes] = await Promise.all([
-          fetch("/api/content"),
+        const [moviesRes, seriesRes, trendingRes] = await Promise.all([
+          fetch("/api/content?type=movie"),
           fetch("/api/content?type=series"),
-          fetch("/api/content?sort=rating&limit=20"),
+          fetch("/api/tmdb?list=trending&type=movie"),
         ]);
 
         const moviesData = await moviesRes.json();
         const seriesData = await seriesRes.json();
-        const topRatedData = await topRatedRes.json();
+        const trendingData = await trendingRes.json();
 
         if (moviesData.success) {
           setMovies(moviesData.data);
@@ -178,7 +45,21 @@ export default function HomePage() {
           }
         }
         if (seriesData.success) setSeries(seriesData.data);
-        if (topRatedData.success) setTopRatedMovies(topRatedData.data);
+        
+        if (trendingData.success && trendingData.data?.length > 0) {
+          const dbMovies = moviesData.success ? moviesData.data : [];
+          const dbTitles = new Set(dbMovies.map((m: Content) => m.title?.toLowerCase().trim()));
+          
+          const existingTrending = dbMovies.filter((movie: Content) => 
+            dbTitles.has(movie.title?.toLowerCase().trim())
+          );
+          setTopRatedMovies(existingTrending);
+          
+          const onlyInTmdb = trendingData.data.filter((t: any) => 
+            !dbTitles.has(t.title?.toLowerCase().trim())
+          );
+          setTmdbTrending(onlyInTmdb);
+        }
       } catch (error) {
         console.error("Error fetching content:", error);
       } finally {
@@ -207,187 +88,172 @@ export default function HomePage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-[#050608]" />
+      <div className="min-h-screen bg-[#0a0a0a]" />
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#050608]" suppressHydrationWarning>
-      {/* Netflix-style Hero Banner */}
-      <section className="relative h-[85vh] min-h-[500px]">
-        {/* Backdrop Image */}
-        <div className="absolute inset-0">
-          {heroContent?.backdrop ? (
-            <img
-              src={heroContent.backdrop}
-              alt=""
-              className="w-full h-full object-cover"
-            />
-          ) : heroContent?.poster ? (
-            <img
-              src={heroContent.poster}
-              alt=""
-              className="w-full h-full object-cover"
-            />
-          ) : null}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#050608] via-[#050608]/70 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#050608] via-transparent to-transparent" />
-          <div className="absolute inset-0 bg-[#050608]/20" />
-        </div>
-
-        {/* Content */}
-        <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center">
-          <div className="max-w-2xl">
-            {heroContent && (
-              <>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  <span className="inline-block px-3 py-1 bg-[#F5C542] text-[#050608] text-sm font-bold rounded mb-4">
-                    {heroContent.category}
-                  </span>
-                  
-                  <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black text-white mb-4 leading-tight">
-                    {heroContent.title}
-                  </h1>
-
-                  <div className="flex items-center gap-4 mb-4">
-                    {heroContent.rating !== undefined && heroContent.rating !== null && (
-                      <span className="flex items-center gap-1 text-yellow-400 font-medium">
-                        <Star className="w-5 h-5 fill-yellow-400" />
-                        {Number(heroContent.rating).toFixed(1)}
-                      </span>
-                    )}
-                    <span className="text-gray-300">{heroContent.year}</span>
-                    {heroContent.duration && (
-                      <span className="text-gray-300">{heroContent.duration}</span>
-                    )}
-                    <span className="px-2 py-0.5 border border-gray-500 text-gray-300 text-sm rounded">
-                      {heroContent.language}
-                    </span>
-                  </div>
-
-                  <p className="text-gray-300 text-lg mb-6 line-clamp-3">
-                    {heroContent.description}
-                  </p>
-
-                  <div className="flex items-center gap-4">
-                    {heroContent.movieData?.embedIframeLink ? (
-                      <Link
-                        href={`/watch/${heroContent._id || heroContent.id}`}
-                        className="flex items-center gap-2 px-8 py-3 bg-white text-black font-bold rounded hover:bg-gray-200 transition-colors"
-                      >
-                        <Play className="w-5 h-5 fill-black" />
-                        Play Now
-                      </Link>
-                    ) : (
-                      <button
-                        disabled
-                        className="flex items-center gap-2 px-8 py-3 bg-gray-600 text-gray-400 font-bold rounded cursor-not-allowed"
-                      >
-                        <Play className="w-5 h-5" />
-                        Coming Soon
-                      </button>
-                    )}
-                    <button className="flex items-center gap-2 px-6 py-3 bg-gray-600/80 text-white font-medium rounded hover:bg-gray-600 transition-colors">
-                      <Info className="w-5 h-5" />
-                      More Info
-                    </button>
-                  </div>
-                </motion.div>
-              </>
-            )}
+    <div className="min-h-screen bg-[#0a0a0a]" suppressHydrationWarning>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black via-black/95 to-transparent">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4 md:gap-6 lg:gap-8">
+              <Link href="/" className="text-xl md:text-2xl font-bold text-white">
+                Prime<span className="text-blue-500">Video</span>
+              </Link>
+              <nav className="hidden md:flex items-center gap-4 lg:gap-6">
+                <Link href="/" className="text-white hover:text-blue-400 text-sm font-medium">
+                  Home
+                </Link>
+                <Link href="/" className="text-white hover:text-blue-400 text-sm font-medium">
+                  TV Shows
+                </Link>
+                <Link href="/" className="text-white hover:text-blue-400 text-sm font-medium">
+                  Movies
+                </Link>
+                <Link href="/" className="text-white hover:text-blue-400 text-sm font-medium">
+                  Channels
+                </Link>
+              </nav>
+              <button 
+                className="md:hidden p-2 text-white"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <div className="relative">
+                <Search className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="bg-black/50 border border-gray-700 text-white text-sm pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 rounded-full w-28 sm:w-40 md:w-44 lg:w-48 focus:w-36 sm:focus:w-56 md:focus:w-60 lg:focus:w-64 transition-all focus:outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
           </div>
+          
+          {mobileMenuOpen && (
+            <nav className="md:hidden mt-4 pb-4">
+              <div className="flex flex-col gap-3">
+                <Link href="/" className="text-white hover:text-blue-400 text-sm font-medium py-2">
+                  Home
+                </Link>
+                <Link href="/" className="text-white hover:text-blue-400 text-sm font-medium py-2">
+                  TV Shows
+                </Link>
+                <Link href="/" className="text-white hover:text-blue-400 text-sm font-medium py-2">
+                  Movies
+                </Link>
+                <Link href="/" className="text-white hover:text-blue-400 text-sm font-medium py-2">
+                  Channels
+                </Link>
+              </div>
+            </nav>
+          )}
         </div>
+      </header>
 
-        </section>
+      <PrimeVideoHeroBanner content={heroContent} />
 
-        {/* Content Sections */}
-      <div className="relative -mt-32 z-10 pb-20">
-        {/* Top Rated Section */}
-        {!loading && topRatedMovies.length > 0 && (
-          <div className="mb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-            <ContentSlider
-              title="Top Rated"
-              items={topRatedMovies}
-              type="movie"
-            />
-          </div>
-        )}
-
-        {/* Category Filter */}
-        <div className="flex items-center gap-2 mb-8 overflow-x-auto px-4 sm:px-6 lg:px-8 pb-2 scrollbar-hide max-w-7xl mx-auto">
-          <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
-          {CATEGORIES.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
-                selectedCategory === category
-                  ? "bg-[#F5C542] text-black"
-                  : "bg-black/50 text-gray-300 hover:bg-black/70"
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-
-        {/* Featured Content Row */}
+      <main className="relative -mt-8 md:-mt-12 lg:-mt-20 z-10 pb-12 md:pb-16 lg:pb-20">
         {loading ? (
-          <div className="px-4 sm:px-6 lg:px-8 mb-12">
-            <div className="h-8 w-48 bg-gray-800 rounded animate-pulse mb-4" />
-            <div className="flex gap-3 overflow-hidden">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="flex-shrink-0 w-[140px] sm:w-[180px] md:w-[200px]">
+          <div className="px-3 sm:px-6 lg:px-8">
+            <div className="h-6 sm:h-8 w-32 sm:w-48 bg-gray-800 rounded animate-pulse mb-4 sm:mb-6" />
+            <div className="flex gap-2 sm:gap-3 overflow-hidden">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="flex-shrink-0 w-[100px] xs:w-[120px] sm:w-[140px] md:w-[160px]">
                   <div className="aspect-[2/3] bg-gray-800 rounded-lg animate-pulse" />
                 </div>
               ))}
             </div>
           </div>
-        ) : categoriesWithContent.length > 0 ? (
-          categoriesWithContent.map((category) => (
-            <div key={category} className="mb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-              <ContentSlider
-                title={category}
-                items={groupedMovies[category]}
-                type="movie"
-              />
-            </div>
-          ))
         ) : (
-          <div className="text-center py-20 px-4">
-            <Film className="w-16 h-16 mx-auto mb-4 text-gray-600" />
-            <p className="text-xl text-gray-400">No content available</p>
-          </div>
-        )}
+          <>
+            {topRatedMovies.length > 0 && (
+              <div className="px-3 sm:px-6 lg:px-8 mb-6 sm:mb-8">
+                <PrimeVideoContentRow
+                  title="Top Rated"
+                  items={topRatedMovies}
+                  type="movie"
+                />
+              </div>
+            )}
 
-        {/* Series Section */}
-        {!loading && series.length > 0 && (
-          <div className="mt-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-            <ContentSlider
-              title="Popular Series"
-              items={series}
-              type="series"
-            />
-          </div>
-        )}
-      </div>
+            {tmdbTrending.length > 0 && (
+              <div className="px-3 sm:px-6 lg:px-8 mb-6 sm:mb-8">
+                <PrimeVideoContentRow
+                  title="Trending on TMDB"
+                  items={tmdbTrending}
+                  type="movie"
+                />
+              </div>
+            )}
 
-      {/* Footer */}
-      <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-[#1F232D]">
+            <div className="flex items-center gap-2 mb-6 md:mb-8 overflow-x-auto px-4 md:px-6 lg:px-8 pb-2 scrollbar-hide">
+              <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
+              {CATEGORIES.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-3 md:px-4 py-1.5 rounded-full text-xs md:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+                    selectedCategory === category
+                      ? "bg-blue-600 text-white"
+                      : "bg-black/50 text-gray-300 hover:bg-black/70"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+
+            {categoriesWithContent.length > 0 ? (
+              categoriesWithContent.map((category) => (
+                <div key={category} className="px-3 sm:px-6 lg:px-8 mb-6 sm:mb-8">
+                  <PrimeVideoContentRow
+                    title={category}
+                    items={groupedMovies[category]}
+                    type="movie"
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-12 sm:py-20 px-4">
+                <Film className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-600" />
+                <p className="text-lg sm:text-xl text-gray-400">No content available</p>
+              </div>
+            )}
+
+            {series.length > 0 && (
+              <div className="px-3 sm:px-6 lg:px-8">
+                <div className="flex items-center gap-2 mb-4 sm:mb-6">
+                  <Tv className="w-4 sm:w-5 h-4 sm:h-5 text-blue-500" />
+                  <h2 className="text-lg sm:text-xl font-bold text-white">Popular TV Shows</h2>
+                </div>
+                <PrimeVideoContentRow
+                  title="TV Shows"
+                  items={series}
+                  type="series"
+                />
+              </div>
+            )}
+          </>
+        )}
+      </main>
+
+      <footer className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 border-t border-gray-900">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <Film className="w-6 h-6 text-[#F5C542]" />
-              <span className="text-xl font-bold text-white">
-                Cine<span className="text-[#F5C542]">Stream</span>
+              <span className="text-lg sm:text-xl font-bold text-white">
+                Prime<span className="text-blue-500">Video</span>
               </span>
             </div>
-            <p className="text-gray-500 text-sm">
-              © 2024 CineStream. All rights reserved.
+            <p className="text-gray-500 text-xs sm:text-sm">
+              © 2024 PrimeVideo. All rights reserved.
             </p>
           </div>
         </div>
