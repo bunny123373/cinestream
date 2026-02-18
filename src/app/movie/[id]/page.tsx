@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import { Content } from "@/types";
 import PrimeVideoContentRow from "@/components/PrimeVideoContentRow";
-import DownloadAd from "@/components/DownloadAd";
 
 export default function MovieDetailsPage() {
   const params = useParams();
@@ -72,8 +71,6 @@ export default function MovieDetailsPage() {
       } catch (err) {
         setError("An error occurred while fetching the movie");
         console.error(err);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -82,21 +79,28 @@ export default function MovieDetailsPage() {
     }
   }, [id]);
 
+  const hasEmbedLink = !!movie?.movieData?.embedIframeLink;
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
   if (!mounted) {
     return (
       <div className="min-h-screen bg-[#050608]" />
     );
   }
 
-  const hasEmbedLink = !!movie?.movieData?.embedIframeLink;
-
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050608] flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <div className="w-12 h-12 border-4 border-[#F5C542] border-t-transparent rounded-full animate-spin" />
-          <p className="mt-4 text-[#9CA3AF]">Loading movie...</p>
-        </div>
+      <div className="min-h-screen bg-[#050608] flex flex-col items-center justify-center">
+        <h1 className="text-3xl font-bold text-white mb-4">
+          Prime<span className="text-blue-500">Video</span>
+        </h1>
+        <div className="w-10 h-10 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -132,7 +136,6 @@ export default function MovieDetailsPage() {
 
   return (
     <div className="min-h-screen bg-[#050608]">
-      <DownloadAd />
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[#050608]/80 backdrop-blur-xl border-b border-[#1F232D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -6,7 +6,6 @@ import { Search, Film, Tv, Menu, X } from "lucide-react";
 import { Content } from "@/types";
 import PrimeVideoHeroBanner from "@/components/PrimeVideoHeroBanner";
 import PrimeVideoContentRow from "@/components/PrimeVideoContentRow";
-import DownloadAd from "@/components/DownloadAd";
 
 const CATEGORIES = ["All", "Action", "Drama", "Comedy", "Thriller", "Horror", "Romance", "Sci-Fi", "Anime"];
 
@@ -63,12 +62,16 @@ export default function HomePage() {
         }
       } catch (error) {
         console.error("Error fetching content:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchContent();
+
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const filteredMovies = selectedCategory === "All" 
@@ -93,9 +96,19 @@ export default function HomePage() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center">
+        <h1 className="text-3xl font-bold text-white mb-4">
+          Prime<span className="text-blue-500">Video</span>
+        </h1>
+        <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0a]" suppressHydrationWarning>
-      <DownloadAd />
       <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black via-black/95 to-transparent">
         <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-between">
@@ -162,19 +175,7 @@ export default function HomePage() {
       <PrimeVideoHeroBanner content={heroContent} />
 
       <main className="relative -mt-8 md:-mt-12 lg:-mt-20 z-10 pb-12 md:pb-16 lg:pb-20">
-        {loading ? (
-          <div className="px-3 sm:px-6 lg:px-8">
-            <div className="h-6 sm:h-8 w-32 sm:w-48 bg-gray-800 rounded animate-pulse mb-4 sm:mb-6" />
-            <div className="flex gap-2 sm:gap-3 overflow-hidden">
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="flex-shrink-0 w-[100px] xs:w-[120px] sm:w-[140px] md:w-[160px]">
-                  <div className="aspect-[2/3] bg-gray-800 rounded-lg animate-pulse" />
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <>
+        <>
             {topRatedMovies.length > 0 && (
               <div className="px-3 sm:px-6 lg:px-8 mb-6 sm:mb-8">
                 <PrimeVideoContentRow
@@ -243,7 +244,6 @@ export default function HomePage() {
               </div>
             )}
           </>
-        )}
       </main>
 
       <footer className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 border-t border-gray-900">

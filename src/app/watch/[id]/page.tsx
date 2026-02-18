@@ -19,21 +19,6 @@ import IframePlayer from "@/components/IframePlayer";
 import { Content } from "@/types";
 import PrimeVideoContentRow from "@/components/PrimeVideoContentRow";
 
-const PlayerAd = () => {
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://quge5.com/88/tag.min.js";
-    script.setAttribute("data-zone", "212237");
-    script.setAttribute("data-cfasync", "false");
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
-  return null;
-};
-
 export default function WatchMoviePage() {
   const params = useParams();
   const id = params.id as string;
@@ -82,8 +67,6 @@ export default function WatchMoviePage() {
       } catch (err) {
         setError("An error occurred while fetching the movie");
         console.error(err);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -91,6 +74,13 @@ export default function WatchMoviePage() {
       fetchMovie();
     }
   }, [id]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (!mounted) {
     return (
@@ -100,11 +90,11 @@ export default function WatchMoviePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050608] flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <div className="w-12 h-12 border-4 border-[#F5C542] border-t-transparent rounded-full animate-spin" />
-          <p className="mt-4 text-[#9CA3AF]">Loading movie...</p>
-        </div>
+      <div className="min-h-screen bg-[#050608] flex flex-col items-center justify-center">
+        <h1 className="text-3xl font-bold text-white mb-4">
+          Cine<span className="text-yellow-500">Stream</span>
+        </h1>
+        <div className="w-10 h-10 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -162,7 +152,6 @@ export default function WatchMoviePage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <PlayerAd />
         {/* Video Player Section */}
         <section className="mb-8">
           <IframePlayer

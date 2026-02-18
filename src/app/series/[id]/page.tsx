@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { Content, Episode } from "@/types";
 import PrimeVideoContentRow from "@/components/PrimeVideoContentRow";
-import DownloadAd from "@/components/DownloadAd";
 
 export default function SeriesDetailsPage() {
   const params = useParams();
@@ -75,8 +74,6 @@ export default function SeriesDetailsPage() {
       } catch (err) {
         setError("An error occurred while fetching the series");
         console.error(err);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -84,6 +81,13 @@ export default function SeriesDetailsPage() {
       fetchSeries();
     }
   }, [id]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const hasAnyEmbedLink =
     series?.seasons?.some((season) =>
@@ -100,11 +104,11 @@ export default function SeriesDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#050608] flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <div className="w-12 h-12 border-4 border-[#8B5CF6] border-t-transparent rounded-full animate-spin" />
-          <p className="mt-4 text-[#9CA3AF]">Loading series...</p>
-        </div>
+      <div className="min-h-screen bg-[#050608] flex flex-col items-center justify-center">
+        <h1 className="text-3xl font-bold text-white mb-4">
+          Prime<span className="text-blue-500">Video</span>
+        </h1>
+        <div className="w-10 h-10 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -142,7 +146,6 @@ export default function SeriesDetailsPage() {
 
   return (
     <div className="min-h-screen bg-[#050608]">
-      <DownloadAd />
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[#050608]/80 backdrop-blur-xl border-b border-[#1F232D]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

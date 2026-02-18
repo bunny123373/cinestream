@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import AdOnClick from "@/components/AdOnClick";
 
 export const metadata: Metadata = {
   title: "CineStream - Watch Movies & Series Online",
@@ -37,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased" suppressHydrationWarning>
-        <AdOnClick />
+        <script dangerouslySetInnerHTML={{ __html: `(function(s){s.dataset.zone='10623591',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))` }} />
         {children}
       </body>
     </html>

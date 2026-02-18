@@ -31,6 +31,7 @@ export interface IContent extends Document {
   duration?: string;
   movieData?: IMovieData;
   seasons?: ISeason[];
+  downloadCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -128,6 +129,10 @@ const ContentSchema: Schema<IContent> = new Schema(
     seasons: {
       type: [SeasonSchema],
       default: [],
+    },
+    downloadCount: {
+      type: Number,
+      default: 0,
     },
   },
   {
