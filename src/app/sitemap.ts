@@ -5,7 +5,7 @@ import Content from "@/models/Content";
 export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://cinestream.example.com";
+  const baseUrl = process.env.NEXT_PUBLIC_URL || "https://cineprime11.netlify.app";
 
   try {
     await connectDB();

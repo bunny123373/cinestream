@@ -4,12 +4,15 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "CineStream - Watch Movies & Series Online",
   description: "Stream your favorite movies and series online with CineStream. High-quality content with embed player support.",
-  keywords: ["movies", "series", "streaming", "online", "watch", "cinema"],
+  keywords: ["movies", "series", "streaming", "online", "watch", "cinema", "cineprime11", "cineprime11.netlify.app"],
   authors: [{ name: "CineStream" }],
   manifest: "/manifest.json",
+  metadataBase: new URL("https://cineprime11.netlify.app"),
   openGraph: {
     title: "CineStream - Watch Movies & Series Online",
     description: "Stream your favorite movies and series online with CineStream.",
+    url: "https://cineprime11.netlify.app",
+    siteName: "CineStream",
     type: "website",
   },
   icons: {
